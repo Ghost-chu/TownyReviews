@@ -1,0 +1,5 @@
+webhook: https://example.com
+servername: Bilicraft
+reviews:
+  NATION: true
+  TOWN: false
