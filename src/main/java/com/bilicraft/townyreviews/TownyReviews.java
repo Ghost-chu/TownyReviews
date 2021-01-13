@@ -94,6 +94,10 @@ public final class TownyReviews extends JavaPlugin implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onNationCreate(NewNationEvent event) {
         if (review(ReviewType.NATION, event.getNation().getName())) {
+            sendDiscordWebhook(ReviewType.NATION
+                    , StatusType.SUCCESS
+                    , event.getNation().getKing().getPlayer()
+                    , "新的国家 " + event.getNation().getName() + " 创建成功");
             return;
         }
         //TownyAPI.getInstance().getDataSource().removeNation(event.getNation());
@@ -103,7 +107,7 @@ public final class TownyReviews extends JavaPlugin implements Listener {
         sendDiscordWebhook(ReviewType.NATION
                 , StatusType.CREATE_REQUEST
                 , event.getNation().getKing().getPlayer()
-                , "申请创建新的国家 " + event.getNation().getName() + "，批准请输入命令 `/townreviews accept " + ReviewType.NATION.name() + " " + event.getNation().getName() + "`");
+                , "申请创建新的国家 " + event.getNation().getName() + "，批准请输入命令 `/townyreviews accept " + ReviewType.NATION.name() + " " + event.getNation().getName() + "`");
         try {
             TownyAPI.getInstance().getDataSource().renameNation(event.getNation(),getMaskedName(event.getNation().getUuid()));
         } catch (AlreadyRegisteredException | NotRegisteredException e) {
@@ -114,6 +118,10 @@ public final class TownyReviews extends JavaPlugin implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onNationRename(NationPreRenameEvent event) {
         if (!review(ReviewType.NATION, event.getNewName())) {
+            sendDiscordWebhook(ReviewType.NATION
+                    , StatusType.SUCCESS
+                    , event.getNation().getKing().getPlayer()
+                    , "国家改名 从 " + event.getOldName() +" 到 " +event.getNewName()+ " 成功");
             return;
         }
         event.getNation().getKing().getPlayer().sendMessage(ChatColor.YELLOW
@@ -123,13 +131,17 @@ public final class TownyReviews extends JavaPlugin implements Listener {
         sendDiscordWebhook(ReviewType.NATION
                 , StatusType.RENAME_REQUEST
                 , event.getNation().getKing().getPlayer()
-                , "申请修改名称为 " + event.getNewName() + "，批准请输入命令 `/townreviews accept " + ReviewType.NATION.name() + " " + event.getNewName() + "`");
+                , "申请修改名称为 " + event.getNewName() + "，批准请输入命令 `/townyreviews accept " + ReviewType.NATION.name() + " " + event.getNewName() + "`");
     }
 
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onTownCreate(NewTownEvent event) {
         if (review(ReviewType.TOWN, event.getTown().getName())) {
+            sendDiscordWebhook(ReviewType.NATION
+                    , StatusType.SUCCESS
+                    , event.getTown().getMayor().getPlayer()
+                    , "新的国家 " + event.getTown().getName() + " 创建成功");
             return;
         }
         //TownyAPI.getInstance().getDataSource().removeTown(event.getTown());
@@ -140,7 +152,7 @@ public final class TownyReviews extends JavaPlugin implements Listener {
         sendDiscordWebhook(ReviewType.TOWN
                 , StatusType.CREATE_REQUEST
                 , event.getTown().getMayor().getPlayer()
-                , "申请创建新的城镇 " + event.getTown().getName() + "，批准请输入命令 `/townreviews accept " + ReviewType.TOWN.name() + " " + event.getTown().getName() + "`");
+                , "申请创建新的城镇 " + event.getTown().getName() + "，批准请输入命令 `/townyreviews accept " + ReviewType.TOWN.name() + " " + event.getTown().getName() + "`");
         try {
             TownyAPI.getInstance().getDataSource().renameTown(event.getTown(),getMaskedName(event.getTown().getUuid()));
         } catch (AlreadyRegisteredException | NotRegisteredException e) {
@@ -151,6 +163,10 @@ public final class TownyReviews extends JavaPlugin implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onTownRename(TownPreRenameEvent event) {
         if (review(ReviewType.TOWN, event.getNewName())) {
+            sendDiscordWebhook(ReviewType.TOWN
+                    , StatusType.SUCCESS
+                    , event.getTown().getMayor().getPlayer()
+                    , "城镇改名 从 " + event.getOldName() +" 到 " +event.getNewName()+ " 成功");
             return;
         }
         event.getTown().getMayor().getPlayer().sendMessage(ChatColor.YELLOW
@@ -160,7 +176,7 @@ public final class TownyReviews extends JavaPlugin implements Listener {
         sendDiscordWebhook(ReviewType.TOWN
                 , StatusType.RENAME_REQUEST
                 , event.getTown().getMayor().getPlayer()
-                , "申请修改名称为 " + event.getNewName() + "，批准请输入命令 `/townreviews accept " + ReviewType.TOWN.name() + " " + event.getNewName() + "`");
+                , "申请修改名称为 " + event.getNewName() + "，批准请输入命令 `/townyreviews accept " + ReviewType.TOWN.name() + " " + event.getNewName() + "`");
 
     }
 
@@ -198,7 +214,7 @@ public final class TownyReviews extends JavaPlugin implements Listener {
         client.send(new WebhookEmbedBuilder()
                 .setAuthor(new WebhookEmbed.EmbedAuthor("TownyReviews", "https://s3.ax1x.com/2021/01/13/sUuWFO.jpg", "https://www.bilicraft.com"))
                 .setColor(15258703)
-                .setDescription(statusType == StatusType.CREATED ? "创建成功提醒" : "有新的等待批准的请求")
+                .setDescription(statusType == StatusType.SUCCESS ? "操作成功通知" : "有新的等待批准的请求")
                 .setTitle(new WebhookEmbed.EmbedTitle(msgTitle, "https://www.bilicraft.com"))
                 .addField(new WebhookEmbed.EmbedField(true, "类别", reviewType.getName()))
                 .addField(new WebhookEmbed.EmbedField(true, "审核", statusType.getName()))
@@ -227,7 +243,7 @@ public final class TownyReviews extends JavaPlugin implements Listener {
     }
 
     public enum StatusType {
-        CREATED("创建成功"),
+        SUCCESS("操作成功"),
         RENAME_REQUEST("改名请求"),
         CREATE_REQUEST("创建请求");
 
