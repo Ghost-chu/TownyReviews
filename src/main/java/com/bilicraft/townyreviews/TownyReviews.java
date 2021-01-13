@@ -124,7 +124,7 @@ public final class TownyReviews extends JavaPlugin implements Listener {
         }
         TownyAPI.getInstance().getDataSource().removeTown(event.getTown());
         event.getTown().getMayor().getPlayer().sendMessage(ChatColor.YELLOW
-                + "城邦注册申请成功：由于您申请创建城邦的城邦名称还未审核通过，因此城邦创建被取消，请等待管理员批准使用名称 " + ChatColor.GREEN + event.getTown().getName()
+                + "城镇注册申请成功：由于您申请创建城镇的城邦名称还未审核通过，因此城镇创建被取消，请等待管理员批准使用名称 " + ChatColor.GREEN + event.getTown().getName()
                 + ChatColor.YELLOW + " 后再重新尝试创建。");
         sendDiscordWebhook(ReviewType.TOWN
                 , StatusType.CREATE_REQUEST
@@ -139,10 +139,10 @@ public final class TownyReviews extends JavaPlugin implements Listener {
             return;
         }
         event.getTown().getMayor().getPlayer().sendMessage(ChatColor.YELLOW
-                + "城邦改名申请成功：由于您申请创建城邦的城邦名称还未审核通过，因此城邦改名被取消，请等待管理员批准使用名称 " + ChatColor.GREEN + event.getNewName()
+                + "城镇改名申请成功：由于您申请创建城邦的城镇名称还未审核通过，因此城镇改名被取消，请等待管理员批准使用名称 " + ChatColor.GREEN + event.getNewName()
                 + ChatColor.YELLOW + " 后再重新尝试改名。");
         event.setCancelled(true);
-        sendDiscordWebhook(ReviewType.NATION
+        sendDiscordWebhook(ReviewType.TOWN
                 , StatusType.RENAME_REQUEST
                 , event.getTown().getMayor().getPlayer()
                 , "申请修改名称为 " + event.getNewName() + "，批准请输入命令 `/tr accept " + ReviewType.TOWN.name() + " " + event.getNewName() + "`");
