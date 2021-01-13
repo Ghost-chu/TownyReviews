@@ -170,7 +170,7 @@ public final class TownyReviews extends JavaPlugin implements Listener {
             return;
         }
         event.getTown().getMayor().getPlayer().sendMessage(ChatColor.YELLOW
-                + "由于您申请创建城邦的城镇名称还未审核通过，因此城镇改名被取消，请等待管理员批准使用名称 " + ChatColor.GREEN + event.getNewName()
+                + "由于您申请创建城镇的城镇名称还未审核通过，因此城镇改名被取消，请等待管理员批准使用名称 " + ChatColor.GREEN + event.getNewName()
                 + ChatColor.YELLOW + " 后再重新尝试改名。");
         event.setCancelled(true);
         sendDiscordWebhook(ReviewType.TOWN
