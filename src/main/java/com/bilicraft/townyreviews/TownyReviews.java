@@ -210,7 +210,7 @@ public final class TownyReviews extends JavaPlugin implements Listener {
         });
         builder.setWait(true);
         WebhookClient client = builder.build();
-        String msgTitle = "新的 " + reviewType.getName() + statusType.getName() + " 的通知";
+        String msgTitle = "新的 " + reviewType.getName() + statusType.getName() + " 通知";
         client.send(new WebhookEmbedBuilder()
                 .setAuthor(new WebhookEmbed.EmbedAuthor("TownyReviews", "https://s3.ax1x.com/2021/01/13/sUuWFO.jpg", "https://www.bilicraft.com"))
                 .setColor(15258703)
