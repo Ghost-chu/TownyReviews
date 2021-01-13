@@ -9,6 +9,9 @@ import com.palmergames.bukkit.towny.event.NationPreRenameEvent;
 import com.palmergames.bukkit.towny.event.NewNationEvent;
 import com.palmergames.bukkit.towny.event.NewTownEvent;
 import com.palmergames.bukkit.towny.event.TownPreRenameEvent;
+import com.palmergames.bukkit.towny.exceptions.AlreadyRegisteredException;
+import com.palmergames.bukkit.towny.exceptions.NotRegisteredException;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -23,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 public final class TownyReviews extends JavaPlugin implements Listener {
     private File dataFile;
@@ -48,25 +52,25 @@ public final class TownyReviews extends JavaPlugin implements Listener {
             sender.sendMessage("Permission denied");
             return true;
         }
-        if(args.length < 3){
-            sender.sendMessage("Wrong usage! Example: /"+label+" accept <TYPE> <NAME>");
+        if (args.length < 3) {
+            sender.sendMessage("Wrong usage! Example: /" + label + " accept <TYPE> <NAME>");
             return true;
         }
-        if(args[0].equalsIgnoreCase("accept")){
-            if(!args[1].equals(ReviewType.NATION.name()) && !args[1].equals(ReviewType.TOWN.name())){
+        if (args[0].equalsIgnoreCase("accept")) {
+            if (!args[1].equals(ReviewType.NATION.name()) && !args[1].equals(ReviewType.TOWN.name())) {
                 sender.sendMessage("Wrong type: NATION or TOWN");
                 return true;
             }
 
             List<String> accepted = this.data.getStringList(args[1]);
-            if(!accepted.contains(args[2])){
+            if (!accepted.contains(args[2])) {
                 accepted.add(args[2]);
             }
-            this.data.set(args[1],accepted);
-            sender.sendMessage("Accepted: "+args[2]);
+            this.data.set(args[1], accepted);
+            sender.sendMessage("Accepted: " + args[2]);
             save();
             return true;
-        }else{
+        } else {
             sender.sendMessage("Wrong action, can use: accept");
             return true;
         }
@@ -92,14 +96,19 @@ public final class TownyReviews extends JavaPlugin implements Listener {
         if (review(ReviewType.NATION, event.getNation().getName())) {
             return;
         }
-        TownyAPI.getInstance().getDataSource().removeNation(event.getNation());
+        //TownyAPI.getInstance().getDataSource().removeNation(event.getNation());
         event.getNation().getKing().getPlayer().sendMessage(ChatColor.YELLOW
-                + "城邦注册申请成功：由于您申请创建城邦的城邦名称还未审核通过，因此城邦创建被取消，请等待管理员批准使用名称 " + ChatColor.GREEN + event.getNation().getName()
-                + ChatColor.YELLOW + " 后再重新尝试创建。");
+                + "由于您申请创建城邦的城邦名称还未审核通过，因此你的城邦已被修改为随机名称，请等待管理员批准使用名称 " + ChatColor.GREEN + event.getNation().getName()
+                + ChatColor.YELLOW + " 后再进行改名。");
         sendDiscordWebhook(ReviewType.NATION
                 , StatusType.CREATE_REQUEST
                 , event.getNation().getKing().getPlayer()
-                , "申请创建新的国家 " + event.getNation().getName() + "，批准请输入命令 `/tr accept " + ReviewType.NATION.name() + " " + event.getNation().getName() + "`");
+                , "申请创建新的国家 " + event.getNation().getName() + "，批准请输入命令 `/townreviews accept " + ReviewType.NATION.name() + " " + event.getNation().getName() + "`");
+        try {
+            TownyAPI.getInstance().getDataSource().renameNation(event.getNation(),getMaskedName(event.getNation().getUuid()));
+        } catch (AlreadyRegisteredException | NotRegisteredException e) {
+            e.printStackTrace();
+        }
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -108,29 +117,35 @@ public final class TownyReviews extends JavaPlugin implements Listener {
             return;
         }
         event.getNation().getKing().getPlayer().sendMessage(ChatColor.YELLOW
-                + "城邦改名申请成功：由于您申请创建城邦的城邦名称还未审核通过，因此城邦改名被取消，请等待管理员批准使用名称 " + ChatColor.GREEN + event.getNewName()
+                + "由于您申请创建城邦的城邦名称还未审核通过，因此城邦改名被取消，请等待管理员批准使用名称 " + ChatColor.GREEN + event.getNewName()
                 + ChatColor.YELLOW + " 后再重新尝试改名。");
         event.setCancelled(true);
         sendDiscordWebhook(ReviewType.NATION
                 , StatusType.RENAME_REQUEST
                 , event.getNation().getKing().getPlayer()
-                , "申请修改名称为 " + event.getNewName() + "，批准请输入命令 `/tr accept " + ReviewType.NATION.name() + " " + event.getNewName() + "`");
+                , "申请修改名称为 " + event.getNewName() + "，批准请输入命令 `/townreviews accept " + ReviewType.NATION.name() + " " + event.getNewName() + "`");
     }
+
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onTownCreate(NewTownEvent event) {
         if (review(ReviewType.TOWN, event.getTown().getName())) {
             return;
         }
-        TownyAPI.getInstance().getDataSource().removeTown(event.getTown());
+        //TownyAPI.getInstance().getDataSource().removeTown(event.getTown());
+
         event.getTown().getMayor().getPlayer().sendMessage(ChatColor.YELLOW
-                + "城镇注册申请成功：由于您申请创建城镇的城邦名称还未审核通过，因此城镇创建被取消，请等待管理员批准使用名称 " + ChatColor.GREEN + event.getTown().getName()
-                + ChatColor.YELLOW + " 后再重新尝试创建。");
+                + "由于您申请创建城镇的城镇名称还未审核通过，因此你的城镇已被修改为随机名称，请等待管理员批准使用名称 " + ChatColor.GREEN + event.getTown().getName()
+                + ChatColor.YELLOW + " 后再重新改名。");
         sendDiscordWebhook(ReviewType.TOWN
                 , StatusType.CREATE_REQUEST
                 , event.getTown().getMayor().getPlayer()
-                , "申请创建新的城镇 " + event.getTown().getName() + "，批准请输入命令 `/tr accept " + ReviewType.TOWN.name() + " " + event.getTown().getName() + "`");
-
+                , "申请创建新的城镇 " + event.getTown().getName() + "，批准请输入命令 `/townreviews accept " + ReviewType.TOWN.name() + " " + event.getTown().getName() + "`");
+        try {
+            TownyAPI.getInstance().getDataSource().renameTown(event.getTown(),getMaskedName(event.getTown().getUuid()));
+        } catch (AlreadyRegisteredException | NotRegisteredException e) {
+            e.printStackTrace();
+        }
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -139,13 +154,13 @@ public final class TownyReviews extends JavaPlugin implements Listener {
             return;
         }
         event.getTown().getMayor().getPlayer().sendMessage(ChatColor.YELLOW
-                + "城镇改名申请成功：由于您申请创建城邦的城镇名称还未审核通过，因此城镇改名被取消，请等待管理员批准使用名称 " + ChatColor.GREEN + event.getNewName()
+                + "由于您申请创建城邦的城镇名称还未审核通过，因此城镇改名被取消，请等待管理员批准使用名称 " + ChatColor.GREEN + event.getNewName()
                 + ChatColor.YELLOW + " 后再重新尝试改名。");
         event.setCancelled(true);
         sendDiscordWebhook(ReviewType.TOWN
                 , StatusType.RENAME_REQUEST
                 , event.getTown().getMayor().getPlayer()
-                , "申请修改名称为 " + event.getNewName() + "，批准请输入命令 `/tr accept " + ReviewType.TOWN.name() + " " + event.getNewName() + "`");
+                , "申请修改名称为 " + event.getNewName() + "，批准请输入命令 `/townreviews accept " + ReviewType.TOWN.name() + " " + event.getNewName() + "`");
 
     }
 
@@ -153,13 +168,17 @@ public final class TownyReviews extends JavaPlugin implements Listener {
         if (!getConfig().getBoolean("reviews." + type.name(), true)) {
             return true;
         }
-        if(name.contains(" ")){
-            getLogger().info("城镇 ["+name+"] 正试图创建带有空格的名字，这是不允许的行为，已自动拒绝。");
+        if (name.contains(" ")) {
+            getLogger().info("城镇 [" + name + "] 正试图创建带有空格的名字，这是不允许的行为，已自动拒绝。");
             return false;
         }
         name = name.trim();
         List<String> acceptedList = data.getStringList(type.name());
         return acceptedList.contains(name);
+    }
+
+    public String getMaskedName(UUID uuid){
+        return StringUtils.left(uuid.toString().replace("-",""),20);
     }
 
 
