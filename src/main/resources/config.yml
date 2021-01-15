@@ -1,5 +1,6 @@
 webhook: https://example.com
 servername: Bilicraft
+channelid: 798919009701462056
 reviews:
   NATION: true
   TOWN: false

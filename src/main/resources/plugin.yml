@@ -3,7 +3,7 @@ version: ${project.version}
 main: com.bilicraft.townyreviews.TownyReviews
 api-version: 1.16
 authors: [ Bilicraft ]
-depend: [ Towny ]
+depend: [ Towny, DiscordSRV ]
 description: 审计玩家提交的城邦、小镇创建请求
 commands:
   townyreviews:
