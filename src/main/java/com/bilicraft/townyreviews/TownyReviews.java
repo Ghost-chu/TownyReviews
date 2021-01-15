@@ -127,6 +127,10 @@ public final class TownyReviews extends JavaPlugin implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onNationCreate(NewNationEvent event) {
+        if(!review(event.getNation().getName())){
+            TownyAPI.getInstance().getDataSource().deleteNation(event.getNation());
+            return;
+        }
         event.getNation().getKing().getPlayer().sendMessage(ChatColor.YELLOW
                 + "城邦创建成功并已加入审核队列，审核期间您的城邦将使用随机名称，审核通过后您的城邦才会显示正常名称。");
         getDiscordRequestPool().createNationPendingRequest(event.getNation().getName(), event.getNation().getKing().getPlayer().getName(),event.getNation());
@@ -139,13 +143,16 @@ public final class TownyReviews extends JavaPlugin implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onNationRename(NationPreRenameEvent event) {
+        if(!review(event.getNewName())){
+            event.setCancelled(true);
+            return;
+        }
         event.getNation().getResidents().forEach(resident -> {
             Player player = resident.getPlayer();
             if(player != null){
                 player.sendMessage(ChatColor.YELLOW + "你所在的城邦的重命名操作已加入审核队列，审核期间城邦将使用旧名称，审核通过后城邦才会显示新的名称。");
             }
         });
-
         event.getNation().getKing().getPlayer().sendMessage(ChatColor.YELLOW
                 + "重命名操作已加入审核队列，审核期间您的城邦将使用旧名称，审核通过后您的城邦才会显示新的名称。");
         event.setCancelled(true);
@@ -156,6 +163,10 @@ public final class TownyReviews extends JavaPlugin implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onTownCreate(NewTownEvent event) {
+        if(!review(event.getTown().getName())){
+            TownyAPI.getInstance().getDataSource().deleteTown(event.getTown());
+            return;
+        }
         event.getTown().getMayor().getPlayer().sendMessage(ChatColor.YELLOW
                 + "城镇创建成功并已加入审核队列，审核期间城镇将使用随机名称，审核通过后城镇才会显示正常名称。");
         getDiscordRequestPool().createTownPendingRequest(event.getTown().getName(),event.getTown().getMayor().getName(), event.getTown());
@@ -168,6 +179,10 @@ public final class TownyReviews extends JavaPlugin implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onTownRename(TownPreRenameEvent event) {
+        if(!review(event.getNewName())){
+            event.setCancelled(true);
+            return;
+        }
         event.getTown().getResidents().forEach(resident -> {
             Player player = resident.getPlayer();
             if(player != null){
@@ -183,17 +198,12 @@ public final class TownyReviews extends JavaPlugin implements Listener {
         return discordRequestPool;
     }
 
-    private boolean review(ReviewType type, String name) {
-        if (!getConfig().getBoolean("reviews." + type.name(), true)) {
-            return true;
-        }
+    private boolean review(String name) {
         if (name.contains(" ")) {
             getLogger().info("城镇 [" + name + "] 正试图创建带有空格的名字，这是不允许的行为，已自动拒绝。");
             return false;
         }
-        name = name.trim();
-        List<String> acceptedList = data.getStringList(type.name());
-        return acceptedList.contains(name);
+        return true;
     }
 
     public String getMaskedName(UUID uuid){
