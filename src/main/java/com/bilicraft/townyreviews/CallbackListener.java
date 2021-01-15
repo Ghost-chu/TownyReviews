@@ -20,7 +20,6 @@ public class CallbackListener extends ListenerAdapter {
             return;
         }
         boolean approve = event.getReaction().getReactionEmote().getAsReactionCode().equals("👍");
-        plugin.getLogger().info("[LOG] Reviews action: "+event.getMessageIdLong()+", approval: "+approve);
         plugin.getDiscordRequestPool().callback(event.getChannel(),event.getMessageIdLong(),approve,event.getUser());
     }
 

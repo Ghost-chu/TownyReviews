@@ -125,8 +125,6 @@ public class DiscordRequestPool {
     public void callback(TextChannel textChannel, long messageId, boolean accepted, User processor) {
         ConfigurationSection section = data.getConfigurationSection(String.valueOf(messageId));
         if (section == null) {
-            plugin.getLogger().info("[LOG] 记录库中找不到ID "+messageId+" 所对应的记录.");
-            textChannel.deleteMessageById(messageId).queue();
             return;
         }
         String type = section.getString("type");
